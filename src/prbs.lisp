@@ -11,18 +11,37 @@
            :num-gen
            :bvlist-gen
            :bit-gen
-           :byte-gen))
+           :byte-gen
+           :dseq))
 
 (in-package :prbs)
+
+(defparameter *lfsr2*
+  (list
+   6 '(6 5)
+   3 '(3 2)
+   2 '(2 1)
+   4 '(4 3)
+   5 '(5 3)
+   7 '(7 6)
+   23 '(23 18)))
+
+(defparameter *lfsr4*
+  (list
+   8 '(8 6 5 4)))
 
 (defun bitbv (n)
   (if (eq 0 n)
       #*0
       #*1))
 
-(defun num->bits (val &optional (size 8))
+(defun num->bv (val &optional (size 8))
   (coerce (loop for i from (1- size) downto 0
              collect (ldb (byte 1 i) val)) 'bit-vector))
+
+(defun num->bits (val &optional (size 8))
+  (loop for i from (1- size) downto 0
+     collect (ldb (byte 1 i) val)))
 
 (defun prbs-n (bv taps)
   (flet ((newbit (bv)
@@ -37,7 +56,7 @@
 (defun make-prbs (n &optional (iv 2))
   "return a lazy list of n-bit bitvectors"
   (let ((taps '(0 1))
-        (init (num->bits iv n)))
+        (init (num->bv iv n)))
     (labels ((rec (v)
                (dcons v
                       (let ((next (prbs-n v taps)))
@@ -99,3 +118,23 @@ The final byte will be zero-padded if necessary."
         (let ((e (- (length b) 1)))
           (bv2int (subseq b 0 e) (* 2 m) (+ a (* m (elt b e))))))))
 
+(defun lfsr (l taps)
+  (match taps
+    ((t1 t2) (logxor (elt l t1) (elt l t2)))
+    ((t1 t2 t3 t4) (logxor (elt l t1) (elt l t2)
+                           (elt l t3) (elt l t4)))))
+
+(defun taps (n)
+  (mapcar #'1- (or
+                (getf *lfsr2* n)
+                (getf *lfsr4* n))))
+
+(defun dseq (n &optional (init 2))
+  (let ((taps (taps n)))
+    (labels ((rec (v o)
+               (if (eql o -1)
+                   (let ((r (lfsr v taps))
+                         (n (1- n)))
+                     (rec (cons r (subseq v 0 n)) n))
+                   (dcons (elt v o) (rec v (1- o))))))
+      (rec (nreverse (num->bits init n)) (1- n)))))
