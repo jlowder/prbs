@@ -4,7 +4,7 @@
     :author "Jason Lowdermilk <jlowdermilk@gmail.com>"
     :licence "MIT"
     :serial t
-    :depends-on (:rmatch)
+    :depends-on (:rmatch :bit-wise)
     :components
     ((:module "src"
               :components

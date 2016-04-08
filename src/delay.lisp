@@ -3,31 +3,31 @@
 (defpackage prbs.delay
   (:use :cl)
   (:export :delay
-           :force
-           :take
-           :take-all
+           :dtake
            :dcons
-           :dlist
            :dcar
+           :dnull
            :dcdr))
 
 (in-package :prbs.delay)
 
-(defmacro delay (expr)
-  (let ((gg (gensym)))
-    `(let ((,gg #'(lambda () ,expr)))
-       (setf (get 'forcable ,gg) t)
-       ,gg)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; These are mostly based on the lazy functions from "Land Of Lisp" 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmacro force (x)
-  (let ((gg (gensym)))
-  `(if (get 'forcable ,x)
-       (let ((,gg (get 'forced ,x)))
-         (when (null ,gg)
-           (setf (get 'forced ,x) t)
-           (setf (get 'forced-value ,x) (funcall ,x)))
-         (get 'forced-value ,x))
-       ,x)))
+(defmacro delay (expr)
+  (let ((forced (gensym))
+        (value (gensym)))
+    `(let ((,forced nil)
+           (,value nil))
+       (lambda ()
+         (unless ,forced
+           (setq ,value ,expr)
+           (setq ,forced t))
+         ,value))))
+
+(defun force (x)
+  (funcall x))
 
 (defmacro dcons (a b)
   `(delay (cons ,a ,b)))
@@ -38,23 +38,7 @@
 (defun dcar (a)
   (car (force a)))
   
-(defun dlist (l)
-  (delay (when l
-           (cons (car l) (dlist (cdr l))))))
-
-(defun dnil ()
-  (delay nil))
-
 (defun dnull (x)
   (not (force x)))
-
-(defun take (n l)
-  (unless (or (zerop n)
-              (dnull l))
-    (cons (dcar l) (take (1- n) (dcdr l)))))
-
-(defun take-all (l)
-  (unless (dnull l)
-    (cons (dcar l) (take-all (dcdr l)))))
 
 
