@@ -8,6 +8,8 @@
                 :dcar
                 :dcdr
                 :dnull)
+  (:import-from :prbs.taps
+                :taps)
   (:export :make-prbs
            :num-gen
            :bvlist-gen
@@ -23,26 +25,6 @@
            :dnull))
 
 (in-package :prbs)
-
-(defparameter *lfsr2*
-  (list
-   6 '(6 5)
-   3 '(3 2)
-   2 '(2 1)
-   4 '(4 3)
-   5 '(5 3)
-   7 '(7 6)
-   23 '(23 18)))
-
-(defparameter *lfsr4*
-  (list
-   8 '(8 6 5 4)))
-
-(defun taps (n)
-  (mapcar #'(lambda (x) (- n x))
-          (or
-           (getf *lfsr2* n)
-           (getf *lfsr4* n))))
 
 (defun prbs-n (bv taps)
   "shift a bit vector by one bit and use the register taps to generate a new bit"

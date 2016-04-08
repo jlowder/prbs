@@ -8,5 +8,6 @@
     :components
     ((:module "src"
               :components
-              ((:file "delay")
+              ((:file "taps")
+               (:file "delay")
                (:file "prbs")))))
