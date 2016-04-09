@@ -65,7 +65,7 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
              (setq v (dcdr v))
              b)))))
       
-(defun bit-gen (n &optional (skip 0) (init #*10))
+(defun bit-gen (n &optional (init #*10))
   "return a function representing prbs-N. The returned function takes a single argument which is the number of the next bits to generate from the sequence (default 1 bit)."
   (let ((gen (bvlist-gen n init))
         (res #*))
@@ -81,10 +81,6 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
                  (if (> (length v) c)
                      (subseq v 0 c)
                      v))))
-      (let ((n (floor (/ skip n)))
-            (m (mod skip n)))
-        (loop repeat n do (funcall gen))
-        (rec m))
       #'rec)))
 
 (defun num-gen (n &optional (init #*10))
@@ -154,17 +150,26 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
           (sbeginsp (subseq p 1) g)
           nil)))
 
-(defun sfind (p n &optional (offset 0))
-  (let ((gen (bit-gen n offset)))
-    (if (sbeginsp p gen)
-        offset
-        (sfind p n (1+ offset)))))
+(defun sfind (p n)
+  (let ((gen (bit-gen n))
+        (len (seq-length n)))
+    (labels ((rec (p rem n)
+               (if (zerop n)
+                   nil
+                   (let ((v (concatenate 'bit-vector rem (funcall gen (- (length p) (length rem))))))
+                     (if (equal p v)
+                         t
+                         (rec p (subseq v 1) (1- n)))))))
+      (rec p #* len))))
 
-(defun sfind-all (p n &optional (rem (seq-length n)) (offset 0) (coll nil))
-  (if (zerop rem)
-      coll
-      (let ((gen (bit-gen n)))
-        (funcall gen offset)
-        (if (sbeginsp p gen)
-            (sfind-all p n (1- rem) (1+ offset) (cons offset coll))
-            (sfind-all p n (1- rem) (1+ offset) coll)))))
+(defun sfind-all (p n)
+  (let ((gen (bit-gen n))
+        (len (seq-length n)))
+    (labels ((rec (p rem n o c)
+               (if (zerop n)
+                   c
+                   (let ((v (concatenate 'bit-vector rem (funcall gen (- (length p) (length rem))))))
+                     (if (equal p v)
+                         (rec p (subseq v 1) (1- n) (1+ o) (cons o c))
+                         (rec p (subseq v 1) (1- n) (1+ o) c))))))
+      (rec p #* len 0 nil))))
