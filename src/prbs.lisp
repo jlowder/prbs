@@ -26,6 +26,8 @@
 
 (in-package :prbs)
 
+(declaim (optimize (debug 0) (safety 0) (speed 3)))
+
 (defun prbs-n (bv taps)
   "=> bit-vector
 
@@ -38,7 +40,7 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
     (concatenate 'bit-vector
                  (subseq bv 1)
                  (bitbv (newbit bv)))))
-
+  
 (defun make-prbs (n &optional (iv #*10))
   "=>  lazy list of repeating `N`-bit bitvectors
 
@@ -51,15 +53,19 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
       (rec (num->bv (bv->num iv) n)))))
 
 (defun bvlist-gen (n &optional (init #*10))
-  "return a function representing prbs-N. The returned function takes a single argument which is the number of the next n-bit bit vectors to generate from the sequence (default 1 value)."
+  "=> lambda (x)
+
+Create a prbs-`N` function. The function takes a single argument which is the number of the next `N`-bit bit vectors to generate from the sequence (default 1 value).
+
+`IV` can be provided as an initial bit-vector."
   (let ((v (make-prbs n init)))
     (lambda (&optional (c 1))
-      (loop for i from 1 to c collecting
+      (loop repeat c collecting
            (let ((b (dcar v)))
              (setq v (dcdr v))
              b)))))
       
-(defun bit-gen (n &optional (init #*10))
+(defun bit-gen (n &optional (skip 0) (init #*10))
   "return a function representing prbs-N. The returned function takes a single argument which is the number of the next bits to generate from the sequence (default 1 bit)."
   (let ((gen (bvlist-gen n init))
         (res #*))
@@ -75,7 +81,11 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
                  (if (> (length v) c)
                      (subseq v 0 c)
                      v))))
-    #'rec)))
+      (let ((n (floor (/ skip n)))
+            (m (mod skip n)))
+        (loop repeat n do (funcall gen))
+        (rec m))
+      #'rec)))
 
 (defun num-gen (n &optional (init #*10))
   "return a function representing prbs-N. The returned function takes a single argument which is the number of the next n-bit integer values to generate from the sequence (default 1 value)."
@@ -111,3 +121,50 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
   (unless (or (zerop n)
               (dnull l))
     (cons (dcar l) (dtake (1- n) (dcdr l)))))
+
+(defun beginsp (p d)
+  (if (null p)
+      t
+      (if (equal (car p) (dcar d))
+          (beginsp (cdr p) (dcdr d))
+          nil)))
+                 
+(defun dfind (p d n &optional (o 0))
+  (if (zerop n)
+      nil
+      (if (beginsp p d)
+          o
+          (dfind p (dcdr d) (1- n) (1+ o)))))
+
+(defun seq-length (n)
+  (* n (1- (expt 2 n))))
+
+(defun dfind-all (p d n &optional (o 0) (c nil))
+  (if (zerop n)
+      c
+      (dfind-all p (dcdr d) (1- n) (1+ o) 
+                 (if (beginsp p d)
+                     (cons o c)
+                     c))))
+
+(defun sbeginsp (p g)
+  (if (equal #* p)
+      t
+      (if (equal (bitbv (elt p 0)) (funcall g))
+          (sbeginsp (subseq p 1) g)
+          nil)))
+
+(defun sfind (p n &optional (offset 0))
+  (let ((gen (bit-gen n offset)))
+    (if (sbeginsp p gen)
+        offset
+        (sfind p n (1+ offset)))))
+
+(defun sfind-all (p n &optional (rem (seq-length n)) (offset 0) (coll nil))
+  (if (zerop rem)
+      coll
+      (let ((gen (bit-gen n)))
+        (funcall gen offset)
+        (if (sbeginsp p gen)
+            (sfind-all p n (1- rem) (1+ offset) (cons offset coll))
+            (sfind-all p n (1- rem) (1+ offset) coll)))))
