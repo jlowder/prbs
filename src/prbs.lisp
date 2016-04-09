@@ -27,7 +27,9 @@
 (in-package :prbs)
 
 (defun prbs-n (bv taps)
-  "shift a bit vector by one bit and use the register taps to generate a new bit"
+  "=> bit-vector
+
+left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
   (flet ((newbit (bv)
            (apply #'logxor (match taps
                              ((t1 t2) (list (elt bv t1) (elt bv t2)))
@@ -38,7 +40,9 @@
                  (bitbv (newbit bv)))))
 
 (defun make-prbs (n &optional (iv #*10))
-  "return a lazy list of repeating n-bit bitvectors"
+  "=>  lazy list of repeating `N`-bit bitvectors
+
+`IV` can be provided as an initial bit-vector."
   (let ((taps (taps n)))
     (labels ((rec (v)
                (dcons v
