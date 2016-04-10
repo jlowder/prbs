@@ -42,15 +42,16 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
                  (bitbv (newbit bv)))))
   
 (defun make-prbs (n &optional (iv #*10))
-  "=>  lazy list of repeating `N`-bit bitvectors
+  "=> lambda ()
 
-`IV` can be provided as an initial bit-vector."
-  (let ((taps (taps n)))
-    (labels ((rec (v)
-               (dcons v
-                      (let ((next (prbs-n v taps)))
-                        (rec next)))))
-      (rec (num->bv (bv->num iv) n)))))
+Each call to the lambda will return the next bitvector of length `N` in the prbs-`N` sequence.
+`IV` can be provided as an initial bitvector of length `N` or less."
+  (let ((taps (taps n))
+        (v (num->bv (bv->num iv) n)))
+    (lambda ()
+      (let ((r v))
+        (setq v (prbs-n v taps))
+        r))))
 
 (defun bvlist-gen (n &optional (init #*10))
   "=> lambda (x)
@@ -60,11 +61,8 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
 `IV` can be provided as an initial bit-vector."
   (let ((v (make-prbs n init)))
     (lambda (&optional (c 1))
-      (loop repeat c collecting
-           (let ((b (dcar v)))
-             (setq v (dcdr v))
-             b)))))
-      
+      (loop repeat c collecting (funcall v)))))
+
 (defun bit-gen (n &optional (init #*10) (skip 0))
   "return a function representing prbs-N. The returned function takes a single argument which is the number of the next bits to generate from the sequence (default 1 bit)."
   (let ((gen (bvlist-gen n init))
@@ -92,10 +90,7 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
   (let ((v (make-prbs n init)))
     (labels ((rec (&optional (c 1))
                   (when (> c 0)
-                    (let ((b (dcar v)))
-                      (when b
-                        (setq v (dcdr v))
-                        (cons (bv->num b) (rec (1- c))))))))
+                    (cons (bv->num (funcall v)) (rec (1- c))))))
       #'rec)))
 
 (defun byte-gen (n &optional (init #*10))
