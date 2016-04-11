@@ -31,41 +31,41 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit."
                  (subseq bv 1)
                  (bitbv (newbit bv)))))
   
-(defun make-prbs (n &key (iv #*10))
+(defun make-prbs (n &key (seed 2))
   "=> lambda ()
 
 Create a lambda representing PRBS-`N`. Each call to the lambda will
 return the next bitvector of length `N` in the prbs-`N` sequence.
-`IV` can be provided as an initial bitvector of length `N` or less."
+`SEED` can be provided as the integer value of the initial vector."
   (let ((taps (taps n))
-        (v (num->bv (bv->num iv) n)))
+        (v (num->bv seed n)))
     (lambda ()
       (let ((r v))
         (setq v (prbs-n v taps))
         r))))
 
-(defun bvlist-gen (n &key (iv #*10))
+(defun bvlist-gen (n &key (seed 2))
   "=> lambda (x)
 
 Create a lambda representing PRBS-`N`. The lambda takes a single
 argument which is the number of the next `N`-bit bitvectors to
 generate from the sequence (default 1 value), which will be returned
-in a list.  `IV` can be provided as an initial bitvector of length `N`
-or less."
-  (let ((v (make-prbs n :iv iv)))
+in a list. `SEED` can be provided as the integer value of the initial
+vector."
+  (let ((v (make-prbs n :seed seed)))
     (lambda (&optional (c 1))
       (loop repeat c collecting (funcall v)))))
 
-(defun bit-gen (n &key (iv #*10) (start 0))
+(defun bit-gen (n &key (seed 2) (start 0))
   "=> lambda (x)
 
 Create a lambda representing PRBS-`N`. The lambda takes a single
 argument which is the number of the next bits to generate from the
 sequence (default 1 bit). The bits will be returned as a bitvector.
-`IV` can be provided as an initial bitvector of length `N` or less. If
+`SEED` can be provided as the integer value of the initial vector. If
 `START` is provided, the generator will be initialized to that bit
 offset."
-  (let ((gen (bvlist-gen n :iv iv))
+  (let ((gen (bvlist-gen n :seed seed))
         (res #*))
     (labels ((rec (&optional (c 1))
                (let* ((len (length res))
@@ -85,30 +85,30 @@ offset."
         (rec m))
       #'rec)))
 
-(defun num-gen (n &key (iv #*10) (start 0))
+(defun num-gen (n &key (seed 2) (start 0))
   "=> lambda (x)
 
 Create a lambda representing PRBS-`N`. The lambda takes a single
 argument which is the number of the next integer values to generate
-from the sequence (default 1 values), which will be returned in a
-list.  `IV` can be provided as an initial bitvector of length `N` or
-less. If `START` is provided, the generator will be initialized to
+from the sequence (default 1 value), which will be returned in a
+list. `SEED` can be provided as the integer value of the initial
+vector. If `START` is provided, the generator will be initialized to
 that bit offset."
-  (let ((gen (bit-gen n :iv iv :start start)))
+  (let ((gen (bit-gen n :seed seed :start start)))
     (lambda (&optional (c 1))
       (loop repeat c
            collect (bv->num (funcall gen n))))))
 
-(defun byte-gen (n &key (iv #*10) (start 0))
+(defun byte-gen (n &key (seed 2) (start 0))
   "=> lambda (x)
 
 Create a lambda representing PRBS-`N`. The lambda takes a single
 argument which is the number of the next 8-bit unsigned integer values
 to generate from the sequence (default 1 byte), which will be returned
-in a list.  `IV` can be provided as an initial bitvector of length `N`
-or less. If `START` is provided, the generator will be initialized to
+in a list. `SEED` can be provided as the integer value of the initial
+vector. If `START` is provided, the generator will be initialized to
 that bit offset."
-  (let ((gen (bit-gen n :iv iv :start start)))
+  (let ((gen (bit-gen n :seed seed :start start)))
     (lambda (&optional (c 1))
       (loop repeat c
            collect (bv->num (funcall gen 8))))))
