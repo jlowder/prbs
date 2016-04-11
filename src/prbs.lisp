@@ -2,12 +2,6 @@
 
 (defpackage prbs
   (:use :cl :rmatch :bit-wise)
-  (:import-from :prbs.delay
-                :delay
-                :dcons
-                :dcar
-                :dcdr
-                :dnull)
   (:import-from :prbs.taps
                 :taps)
   (:export :make-prbs
@@ -15,14 +9,10 @@
            :bvlist-gen
            :bit-gen
            :byte-gen
-           :dseq
            :take
-           :dtake
-           ;; re-export from delay
-           :dcons
-           :dcar
-           :dcdr
-           :dnull))
+           :seq-length
+           :sfind
+           :sfind-all))
 
 (in-package :prbs)
 
@@ -31,7 +21,7 @@
 (defun prbs-n (bv taps)
   "=> bit-vector
 
-left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
+left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit."
   (flet ((newbit (bv)
            (apply #'logxor (match taps
                              ((t1 t2) (list (elt bv t1) (elt bv t2)))
@@ -41,10 +31,11 @@ left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit"
                  (subseq bv 1)
                  (bitbv (newbit bv)))))
   
-(defun make-prbs (n &optional (iv #*10))
+(defun make-prbs (n &key (iv #*10))
   "=> lambda ()
 
-Each call to the lambda will return the next bitvector of length `N` in the prbs-`N` sequence.
+Create a lambda representing PRBS-`N`. Each call to the lambda will
+return the next bitvector of length `N` in the prbs-`N` sequence.
 `IV` can be provided as an initial bitvector of length `N` or less."
   (let ((taps (taps n))
         (v (num->bv (bv->num iv) n)))
@@ -53,19 +44,28 @@ Each call to the lambda will return the next bitvector of length `N` in the prbs
         (setq v (prbs-n v taps))
         r))))
 
-(defun bvlist-gen (n &optional (init #*10))
+(defun bvlist-gen (n &key (iv #*10))
   "=> lambda (x)
 
-Create a prbs-`N` function. The function takes a single argument which is the number of the next `N`-bit bit vectors to generate from the sequence (default 1 value).
-
-`IV` can be provided as an initial bit-vector."
-  (let ((v (make-prbs n init)))
+Create a lambda representing PRBS-`N`. The lambda takes a single
+argument which is the number of the next `N`-bit bitvectors to
+generate from the sequence (default 1 value), which will be returned
+in a list.  `IV` can be provided as an initial bitvector of length `N`
+or less."
+  (let ((v (make-prbs n :iv iv)))
     (lambda (&optional (c 1))
       (loop repeat c collecting (funcall v)))))
 
-(defun bit-gen (n &optional (init #*10) (skip 0))
-  "return a function representing prbs-N. The returned function takes a single argument which is the number of the next bits to generate from the sequence (default 1 bit)."
-  (let ((gen (bvlist-gen n init))
+(defun bit-gen (n &key (iv #*10) (start 0))
+  "=> lambda (x)
+
+Create a lambda representing PRBS-`N`. The lambda takes a single
+argument which is the number of the next bits to generate from the
+sequence (default 1 bit). The bits will be returned as a bitvector.
+`IV` can be provided as an initial bitvector of length `N` or less. If
+`START` is provided, the generator will be initialized to that bit
+offset."
+  (let ((gen (bvlist-gen n :iv iv))
         (res #*))
     (labels ((rec (&optional (c 1))
                (let* ((len (length res))
@@ -79,70 +79,52 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
                  (if (> (length v) c)
                      (subseq v 0 c)
                      v))))
-      (let ((n (floor (/ skip n)))
-            (m (mod skip n)))
+      (let ((n (floor (/ start n)))
+            (m (mod start n)))
         (loop repeat n do (funcall gen))
         (rec m))
       #'rec)))
 
-(defun num-gen (n &optional (init #*10))
-  "return a function representing prbs-N. The returned function takes a single argument which is the number of the next n-bit integer values to generate from the sequence (default 1 value)."
-  (let ((v (make-prbs n init)))
-    (labels ((rec (&optional (c 1))
-                  (when (> c 0)
-                    (cons (bv->num (funcall v)) (rec (1- c))))))
-      #'rec)))
+(defun num-gen (n &key (iv #*10) (start 0))
+  "=> lambda (x)
 
-(defun byte-gen (n &optional (init #*10))
-  "return a function representing prbs-N. The returned function takes a single argument which is the number of the next unsigned integer values to generate from the sequence (default 1 value)."
-  (let ((gen (bit-gen n init)))
+Create a lambda representing PRBS-`N`. The lambda takes a single
+argument which is the number of the next integer values to generate
+from the sequence (default 1 values), which will be returned in a
+list.  `IV` can be provided as an initial bitvector of length `N` or
+less. If `START` is provided, the generator will be initialized to
+that bit offset."
+  (let ((gen (bit-gen n :iv iv :start start)))
+    (lambda (&optional (c 1))
+      (loop repeat c
+           collect (bv->num (funcall gen n))))))
+
+(defun byte-gen (n &key (iv #*10) (start 0))
+  "=> lambda (x)
+
+Create a lambda representing PRBS-`N`. The lambda takes a single
+argument which is the number of the next 8-bit unsigned integer values
+to generate from the sequence (default 1 byte), which will be returned
+in a list.  `IV` can be provided as an initial bitvector of length `N`
+or less. If `START` is provided, the generator will be initialized to
+that bit offset."
+  (let ((gen (bit-gen n :iv iv :start start)))
     (lambda (&optional (c 1))
       (loop repeat c
            collect (bv->num (funcall gen 8))))))
 
 (defun take (n gen)
-  "Use on any of the returned 'gen' functions to get 'n' values from it."
+  "=> `N` values from `GEN`
+
+`GEN` can be a lambda returned from any of the *-gen functions."
   (funcall gen n))
                               
-(defun dseq (n &optional (init #*10))
-  "return a lazy list of ones and zeroes representing a PRBS sequence."
-  (let ((gen (bit-gen n init)))
-    (labels ((rec ()
-               (dcons (bv->num (funcall gen)) (rec))))
-      (rec))))
-
-(defun dtake (n l)
-  "Use to take 'n' values from the lazy list returned from dseq"
-  (unless (or (zerop n)
-              (dnull l))
-    (cons (dcar l) (dtake (1- n) (dcdr l)))))
-
-(defun beginsp (p d)
-  (if (null p)
-      t
-      (if (equal (car p) (dcar d))
-          (beginsp (cdr p) (dcdr d))
-          nil)))
-                 
-(defun dfind (p d n &optional (o 0))
-  (if (zerop n)
-      nil
-      (if (beginsp p d)
-          o
-          (dfind p (dcdr d) (1- n) (1+ o)))))
-
 (defun seq-length (n)
+  "=> number of bits in PRBS-`N`"
   (* n (1- (expt 2 n))))
 
-(defun dfind-all (p d n &optional (o 0) (c nil))
-  (if (zerop n)
-      c
-      (dfind-all p (dcdr d) (1- n) (1+ o) 
-                 (if (beginsp p d)
-                     (cons o c)
-                     c))))
-
 (defun sfind (p n)
+  "=> bit offset where `P` occurs in PRBS-`N`, or nil if not found"
   (let ((gen (bit-gen n)))
     (labels ((rec (p rem n o need)
                (if (zerop n)
@@ -154,6 +136,7 @@ Create a prbs-`N` function. The function takes a single argument which is the nu
       (rec p #* (seq-length n) 0 (length p)))))
 
 (defun sfind-all (p n)
+  "=> list of all bit-offsets where `P` occurs in PRBS-`N`"
   (let ((gen (bit-gen n)))
     (labels ((rec (p rem n o c need)
                (if (zerop n)

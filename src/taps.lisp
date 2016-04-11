@@ -6,6 +6,8 @@
 
 (in-package :prbs.taps)
 
+;; @see http://courses.cse.tamu.edu/csce680/walker/lfsr_table.pdf
+
 (defparameter *lfsr2*
   (list
    2 '(2 1)

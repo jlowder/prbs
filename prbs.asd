@@ -9,5 +9,4 @@
     ((:module "src"
               :components
               ((:file "taps")
-               (:file "delay")
                (:file "prbs")))))
