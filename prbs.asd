@@ -9,4 +9,5 @@
     ((:module "src"
               :components
               ((:file "taps")
-               (:file "prbs")))))
+               (:file "prbs")
+               (:file "err")))))
