@@ -1,0 +1,32 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(ql:quickload '(:usocket :prbs :bit-wise) :silent t)
+
+(defpackage :ros.script.recv.3669479074
+  (:use :cl :usocket :prbs.err :bit-wise))
+(in-package :ros.script.recv.3669479074)
+
+(defun create-server (port size degree)
+  (let ((socket (usocket:socket-connect nil nil
+                                        :protocol :datagram
+                                        :element-type '(unsigned-byte 8)
+                                        :local-host "127.0.0.1"
+                                        :local-port port)))
+    (unwind-protect
+         ;; receive some bytes to lock with
+         (let* ((buffer (usocket:socket-receive socket nil size))
+                (err (lock (bit-wise:bytes->bits (coerce buffer 'list)) degree)))
+           (labels ((rec ()
+                      (let ((buff (usocket:socket-receive socket nil size)))
+                        (multiple-value-bind (a b) (funcall err (bit-wise:bytes->bits (coerce buff 'list)))
+                          (format t "~A ~A~%" a b)))
+                      (rec)))
+             (rec))))
+    (usocket:socket-close socket)))
+
+(defun main (&rest argv)
+  (let ((size argv))
+    (create-server 2002 (parse-integer (car size)) (parse-integer (second size)))))

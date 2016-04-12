@@ -1,0 +1,32 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(ql:quickload '(:usocket :prbs) :silent t)
+(defpackage :ros.script.sender.3669478566
+  (:use :cl :usocket :prbs))
+(in-package :ros.script.sender.3669478566)
+
+(defun create-sender (port size degree)
+  (let* ((socket (usocket:socket-connect nil nil
+                                         :protocol :datagram
+                                         :element-type '(unsigned-byte 8)
+                                         :local-host "127.0.0.1"
+                                         :local-port 2222))
+         (gen (byte-gen degree :seed (get-universal-time))))
+    (unwind-protect
+         (labels ((rec ()
+                    (sleep 0.3)
+                    (usocket:socket-send socket (make-array (list size)
+                                                            :initial-contents (funcall gen size)
+                                                            :element-type '(unsigned-byte 8)) size
+                                                            :port port
+                                                            :host "127.0.0.1")
+                    (rec)))
+           (rec)
+           (usocket:socket-close socket)))))
+
+(defun main (&rest argv)
+  (let ((size argv))
+    (create-sender 2002 (parse-integer (car size)) (parse-integer (second size)))))

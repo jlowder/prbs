@@ -2,7 +2,9 @@
 
 (defpackage prbs.err
   (:use :cl :prbs :bit-wise)
-  (:export :sfind :sfind-all :lock))
+  (:export :sfind
+           :sfind-all
+           :lock))
 
 (in-package :prbs.err)
 
