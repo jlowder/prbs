@@ -110,4 +110,4 @@ datagrams.
 
 ## API Reference
 
-[API Reference](doc/ref.html)
+[API Reference](http://htmlpreview.github.com/?http://github.com/jlowder/prbs/blob/master/doc/ref.html)
