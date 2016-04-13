@@ -8,7 +8,7 @@
 
 (in-package :prbs.err)
 
-;(declaim (optimize (debug 0) (safety 0) (speed 3)))
+(declaim (optimize (debug 0) (safety 0) (speed 3)))
 
 (defun sfind (p n)
   "=> bit offset where `P` occurs in PRBS-`N`, or nil if not found
