@@ -11,7 +11,9 @@
 (declaim (optimize (debug 0) (safety 0) (speed 3)))
 
 (defun sfind (p n)
-  "=> bit offset where `P` occurs in PRBS-`N`, or nil if not found"
+  "=> bit offset where `P` occurs in PRBS-`N`, or nil if not found
+
+Brute-force search a PRBS-`N` sequence for an arbitrary bit pattern."
   (let ((gen (bit-gen n)))
     (labels ((rec (p rem n o need)
                (if (zerop n)
@@ -23,7 +25,9 @@
       (rec p #* (seq-length n) 0 (length p)))))
 
 (defun sfind-all (p n)
-  "=> list of all bit offsets where `P` occurs in PRBS-`N`"
+  "=> list of all bit offsets where `P` occurs in PRBS-`N`
+
+Brute-force search a PRBS-`N` sequence for all matches of an arbitrary bit pattern."
   (let ((gen (bit-gen n)))
     (labels ((rec (p rem n o c need)
                (if (zerop n)
@@ -35,7 +39,14 @@
       (rec p #* (seq-length n) 0 nil (length p)))))
 
 (defun lock (p n &optional (rem n))
-  "lock on a prbs pattern for p. return a function that tracks bit errors for subsequent bits"
+  "=> lambda (x)
+
+Attempt to lock on a PRBS-`N` sequence using the bit pattern `P`. If
+successful, return a lambda that tracks bit errors for subsequent data
+in the sequence, or nil if unable to lock. The lambda can be
+repeatedly called with a bitvector containing subsequent data, and it
+will return the total number of bit errors detected and the total
+number of bits it has seen."
   (unless (or
            (zerop rem)
            (< (length p) n))
