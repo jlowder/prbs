@@ -49,12 +49,13 @@ testing purposes but it makes early values in the sequence "zero heavy".
 => BYTES
 
 (funcall bytes 20)
-#(0 0 0 4 0 0 0 16 0 0 0 64 0 0 1 0 0 0 4 0)
+=> #(0 0 0 4 0 0 0 16 0 0 0 64 0 0 1 0 0 0 4 0)
 
 (setq bytes (byte-gen 31 :seed (get-universal-time)))
- 
+=> #<CLOSURE (LAMBDA (&OPTIONAL (PRBS::C 1)) :IN BYTE-GEN) {10030EA65B}>
+
 (funcall bytes 20)
-#(181 114 141 52 213 202 52 215 87 40 211 85 92 163 77 85 114 141 53 85)
+=> #(181 114 141 52 213 202 52 215 87 40 211 85 92 163 77 85 114 141 53 85)
 
 ~~~
 
