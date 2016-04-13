@@ -1,0 +1,162 @@
+<!doctype html>
+
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+<title>GenDoc Documentation
+</title>
+<link rel='stylesheet' href='simple.css' />
+  </head>
+  <body>
+<article id='reference-prbs' class='apiref-article'>
+  <h1>Reference: PRBS
+  </h1>
+<section id='prbs-functions' class='section-functions'>
+  <h2>Functions
+  </h2>
+<section id='apiref-bit-gen' class='section-apiref-item'>
+  <div class='apiref-spec'>BIT-GEN
+  </div>
+  <div class='apiref-lambda'>(N &amp;KEY (SEED 2) (START 0))
+  </div>
+<div class='apiref-result'>lambda (x)
+</div>
+  <div class='apiref-doc'><p>Create a closure representing PRBS-<code>N</code>. The lambda takes a single
+argument which is the number of the next bits to generate from the
+sequence (default 1 bit). The bits will be returned as a bitvector.
+<code>SEED</code> can be provided as the integer value of the initial vector. If
+<code>START</code> is provided, the generator will be initialized to that bit
+offset.</p>
+
+  </div>
+</section>
+<section id='apiref-bvlist-gen' class='section-apiref-item'>
+  <div class='apiref-spec'>BVLIST-GEN
+  </div>
+  <div class='apiref-lambda'>(N &amp;KEY (SEED 2))
+  </div>
+<div class='apiref-result'>lambda (x)
+</div>
+  <div class='apiref-doc'><p>Create a closure representing PRBS-<code>N</code>. The lambda takes a single
+argument which is the number of the next <code>N</code>-bit bitvectors to
+generate from the sequence (default 1 value), which will be returned
+in a list. <code>SEED</code> can be provided as the integer value of the initial
+vector.</p>
+
+  </div>
+</section>
+<section id='apiref-byte-gen' class='section-apiref-item'>
+  <div class='apiref-spec'>BYTE-GEN
+  </div>
+  <div class='apiref-lambda'>(N &amp;KEY (SEED 2))
+  </div>
+<div class='apiref-result'>lambda (x)
+</div>
+  <div class='apiref-doc'><p>Create a closure representing PRBS-<code>N</code>. The lambda takes a single
+argument which is the number of the next byte values to generate from
+the sequence (default 1 byte), which will be returned as a simple
+array of type (unsigned-byte 8). <code>SEED</code> can be provided as the integer
+value of the initial vector.</p>
+
+  </div>
+</section>
+<section id='apiref-make-prbs' class='section-apiref-item'>
+  <div class='apiref-spec'>MAKE-PRBS
+  </div>
+  <div class='apiref-lambda'>(N &amp;KEY (SEED 2))
+  </div>
+<div class='apiref-result'>lambda ()
+</div>
+  <div class='apiref-doc'><p>Create a closure representing PRBS-<code>N</code>. Each call to the lambda will
+return the next bitvector of length <code>N</code> in the prbs-<code>N</code> sequence.
+<code>SEED</code> can be provided as the integer value of the initial vector.</p>
+
+  </div>
+</section>
+<section id='apiref-num-gen' class='section-apiref-item'>
+  <div class='apiref-spec'>NUM-GEN
+  </div>
+  <div class='apiref-lambda'>(N &amp;KEY (SEED 2))
+  </div>
+<div class='apiref-result'>lambda (x)
+</div>
+  <div class='apiref-doc'><p>Create a closure representing PRBS-<code>N</code>. The lambda takes a single
+argument which is the number of the next integer values to generate
+from the sequence (default 1 value), which will be returned in a
+list. <code>SEED</code> can be provided as the integer value of the initial
+vector.</p>
+
+  </div>
+</section>
+<section id='apiref-seq-length' class='section-apiref-item'>
+  <div class='apiref-spec'>SEQ-LENGTH
+  </div>
+  <div class='apiref-lambda'>(N)
+  </div>
+<div class='apiref-result'>number of bits in PRBS-<code>N</code>
+</div>
+  <div class='apiref-doc'>
+
+  </div>
+</section>
+<section id='apiref-take' class='section-apiref-item'>
+  <div class='apiref-spec'>TAKE
+  </div>
+  <div class='apiref-lambda'>(N GEN)
+  </div>
+<div class='apiref-result'><code>N</code> values from <code>GEN</code>
+</div>
+  <div class='apiref-doc'><p><code>GEN</code> can be a lambda returned from any of the *-gen functions.</p>
+
+  </div>
+</section>
+</section>
+</article>
+<article id='reference-prbs.err' class='apiref-article'>
+  <h1>Reference: PRBS.ERR
+  </h1>
+<section id='prbs.err-functions' class='section-functions'>
+  <h2>Functions
+  </h2>
+<section id='apiref-lock' class='section-apiref-item'>
+  <div class='apiref-spec'>LOCK
+  </div>
+  <div class='apiref-lambda'>(P N &amp;OPTIONAL (REM N))
+  </div>
+<div class='apiref-result'>lambda (x)
+</div>
+  <div class='apiref-doc'><p>Attempt to lock on a PRBS-<code>N</code> sequence using the bit pattern <code>P</code>. If
+successful, return a lambda that tracks bit errors for subsequent data
+in the sequence, or nil if unable to lock. The lambda can be
+repeatedly called with a bitvector containing subsequent data, and it
+will return the total number of bit errors detected and the total
+number of bits it has seen.</p>
+
+  </div>
+</section>
+<section id='apiref-sfind' class='section-apiref-item'>
+  <div class='apiref-spec'>SFIND
+  </div>
+  <div class='apiref-lambda'>(P N)
+  </div>
+<div class='apiref-result'>bit offset where <code>P</code> occurs in PRBS-<code>N</code>, or nil if not found
+</div>
+  <div class='apiref-doc'><p>Brute-force search a PRBS-<code>N</code> sequence for an arbitrary bit pattern.</p>
+
+  </div>
+</section>
+<section id='apiref-sfind-all' class='section-apiref-item'>
+  <div class='apiref-spec'>SFIND-ALL
+  </div>
+  <div class='apiref-lambda'>(P N)
+  </div>
+<div class='apiref-result'>list of all bit offsets where <code>P</code> occurs in PRBS-<code>N</code>
+</div>
+  <div class='apiref-doc'><p>Brute-force search a PRBS-<code>N</code> sequence for all matches of an arbitrary bit pattern.</p>
+
+  </div>
+</section>
+</section>
+</article>
+  </body>
+</html>

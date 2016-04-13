@@ -11,3 +11,18 @@
               ((:file "taps")
                (:file "prbs")
                (:file "err")))))
+
+(defsystem :prbs-docs
+  :depends-on (:cl-gendoc)
+  :pathname "doc"
+  :serial t
+  :components
+  ((:file "prbs-docs")
+   (:static-file "intro.md")))
+
+(defmethod perform :after ((o load-op) (c (eql (find-system :prbs-docs))))
+  (let ((fn (find-symbol (symbol-name 'generate) (find-package :prbs-docs))))
+    (funcall fn)))
+
+(defmethod operation-done-p ((o load-op) (c (eql (find-system :prbs-docs))))
+  nil)

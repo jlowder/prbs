@@ -14,7 +14,7 @@
 
 (in-package :prbs)
 
-(declaim (optimize (debug 0) (safety 0) (speed 3)))
+;(declaim (optimize (debug 0) (safety 0) (speed 3)))
 
 (defun prbs-n (bv taps)
   "=> bit-vector
@@ -98,21 +98,24 @@ vector."
   "=> lambda (x)
 
 Create a closure representing PRBS-`N`. The lambda takes a single
-argument which is the number of the next 8-bit unsigned integer values
-to generate from the sequence (default 1 byte), which will be returned
-in a list. `SEED` can be provided as the integer value of the initial
-vector."
+argument which is the number of the next byte values to generate from
+the sequence (default 1 byte), which will be returned as a simple
+array of type (unsigned-byte 8). `SEED` can be provided as the integer
+value of the initial vector."
   (let ((gen (bit-gen n :seed seed)))
     (lambda (&optional (c 1))
-      (loop repeat c
-           collect (bv->num (funcall gen 8))))))
+      (let ((bytes (make-array (list c) :element-type '(unsigned-byte 8))))
+        (loop for x from 0 to (1- c) do (setf (aref bytes x) (bv->num (funcall gen 8))))
+        bytes))))
 
 (defun take (n gen)
   "=> `N` values from `GEN`
 
 `GEN` can be a lambda returned from any of the *-gen functions."
   (funcall gen n))
-                              
-(defun seq-length (n)
+
+(defun seq-length (N)
   "=> number of bits in PRBS-`N`"
   (* n (1- (expt 2 n))))
+
+

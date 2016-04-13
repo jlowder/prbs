@@ -18,11 +18,11 @@ exec ros -Q -- $0 "$@"
     (unwind-protect
          (labels ((rec ()
                     (sleep 0.3)
-                    (usocket:socket-send socket (make-array (list size)
-                                                            :initial-contents (funcall gen size)
-                                                            :element-type '(unsigned-byte 8)) size
-                                                            :port port
-                                                            :host "127.0.0.1")
+                    (usocket:socket-send socket
+                                         (funcall gen size)
+                                         size
+                                         :port port
+                                         :host "127.0.0.1")
                     (rec)))
            (rec)
            (usocket:socket-close socket)))))
