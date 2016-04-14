@@ -1,9 +1,9 @@
 (in-package :cl-user)
 
 (defpackage prbs
-  (:use :cl :rmatch :bit-wise)
-  (:import-from :prbs.taps
-                :taps)
+  (:use :cl
+        :prbs.util
+        :prbs.taps)
   (:export :make-prbs
            :num-gen
            :bvlist-gen
@@ -16,16 +16,17 @@
 
 (declaim (optimize (debug 0) (safety 0) (speed 3)))
 
-(defun prbs-n (bv taps)
+(defun prbs-n (bv taps &optional (len (length taps)))
   "=> bit-vector
 
 left-shift `BV` by one bit and apply `TAPS` to generate a new right-side bit."
-  (concatenate 'bit-vector
+   (concatenate 'bit-vector
                (subseq bv 1)
-               (bitbv (match taps
-                        ((t1 t2) (logxor (elt bv t1) (elt bv t2)))
-                        ((t1 t2 t3 t4) (logxor (elt bv t1) (elt bv t2)
-                                               (elt bv t3) (elt bv t4)))))))
+               (cond
+                 ((eq 2 len) (bitbv (logxor (elt bv (elt taps 0)) (elt bv (elt taps 1)))))
+                 ((eq 4 len) (bitbv (logxor (elt bv (elt taps 0)) (elt bv (elt taps 1))
+                                            (elt bv (elt taps 2)) (elt bv (elt taps 3)))))
+                 (t nil))))
 
 (defun make-prbs (n &key (seed 2))
   "=> lambda ()

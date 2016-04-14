@@ -1,7 +1,9 @@
 (in-package :cl-user)
 
 (defpackage prbs.err
-  (:use :cl :prbs :bit-wise)
+  (:use :cl
+        :prbs
+        :prbs.util)
   (:export :sfind
            :sfind-all
            :lock))

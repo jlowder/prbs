@@ -3,10 +3,10 @@
 #|
 exec ros -Q -- $0 "$@"
 |#
-(ql:quickload '(:usocket :prbs :bit-wise) :silent t)
+(ql:quickload '(:usocket :prbs) :silent t)
 
 (defpackage :ros.script.recv.3669479074
-  (:use :cl :usocket :prbs.err :bit-wise))
+  (:use :cl :usocket :prbs.err :prbs.util))
 (in-package :ros.script.recv.3669479074)
 
 (defun read-datagram (socket)
@@ -25,11 +25,11 @@ exec ros -Q -- $0 "$@"
     (unwind-protect
          ;; receive some bytes to lock with
          (multiple-value-bind (buffer size) (read-datagram socket)
-           (let ((err (lock (bit-wise:bytes->bits (coerce (subseq buffer 0 size) 'list)) degree)))
+           (let ((err (lock (bytes->bits (coerce (subseq buffer 0 size) 'list)) degree)))
              (if err 
                  (labels ((rec ()
                             (multiple-value-bind (buff size) (read-datagram socket)
-                              (multiple-value-bind (a b) (funcall err (bit-wise:bytes->bits (coerce (subseq buff 0 size) 'list)))
+                              (multiple-value-bind (a b) (funcall err (bytes->bits (coerce (subseq buff 0 size) 'list)))
                                 (format t "~F% errors (~A errs, ~A bits)~%" (coerce (* 100 (/ a b)) 'float) a b)))
                             (rec)))
                    (format t "Locked on ~A bytes~%" size)
