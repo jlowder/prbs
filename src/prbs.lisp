@@ -116,7 +116,7 @@ value of the initial vector."
   (funcall gen n))
 
 (defun seq-length (N)
-  "=> number of bits in PRBS-`N`"
+  "return the number of bits in PRBS-`N`"
   (* n (1- (expt 2 n))))
 
 

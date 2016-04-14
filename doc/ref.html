@@ -93,9 +93,7 @@ vector.</p>
   </div>
   <div class='apiref-lambda'>(N)
   </div>
-<div class='apiref-result'>number of bits in PRBS-<code>N</code>
-</div>
-  <div class='apiref-doc'>
+  <div class='apiref-doc'><p>return the number of bits in PRBS-<code>N</code></p>
 
   </div>
 </section>
@@ -153,6 +151,50 @@ number of bits it has seen.</p>
 <div class='apiref-result'>list of all bit offsets where <code>P</code> occurs in PRBS-<code>N</code>
 </div>
   <div class='apiref-doc'><p>Brute-force search a PRBS-<code>N</code> sequence for all matches of an arbitrary bit pattern.</p>
+
+  </div>
+</section>
+</section>
+</article>
+<article id='reference-prbs.util' class='apiref-article'>
+  <h1>Reference: PRBS.UTIL
+  </h1>
+<section id='prbs.util-functions' class='section-functions'>
+  <h2>Functions
+  </h2>
+<section id='apiref-bitbv' class='section-apiref-item'>
+  <div class='apiref-spec'>BITBV
+  </div>
+  <div class='apiref-lambda'>(N)
+  </div>
+  <div class='apiref-doc'><p>Turn a 1 or 0 into a single-bit bitvector.</p>
+
+  </div>
+</section>
+<section id='apiref-bv->num' class='section-apiref-item'>
+  <div class='apiref-spec'>BV-&gt;NUM
+  </div>
+  <div class='apiref-lambda'>(B &amp;OPTIONAL (M 1) (A 0))
+  </div>
+  <div class='apiref-doc'><p>Convert a bitvector into an integer.</p>
+
+  </div>
+</section>
+<section id='apiref-bytes->bits' class='section-apiref-item'>
+  <div class='apiref-spec'>BYTES-&gt;BITS
+  </div>
+  <div class='apiref-lambda'>(B)
+  </div>
+  <div class='apiref-doc'><p>Convert a list of integer values into a single bytevector.</p>
+
+  </div>
+</section>
+<section id='apiref-num->bv' class='section-apiref-item'>
+  <div class='apiref-spec'>NUM-&gt;BV
+  </div>
+  <div class='apiref-lambda'>(VAL &amp;OPTIONAL (SIZE 8))
+  </div>
+  <div class='apiref-doc'><p>Convert an integer into a bitvector. Specify <code>SIZE</code> if you want something other than 8 bits per value.</p>
 
   </div>
 </section>
