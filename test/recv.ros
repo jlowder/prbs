@@ -9,7 +9,14 @@ exec ros -Q -- $0 "$@"
   (:use :cl :usocket :prbs.err :bit-wise))
 (in-package :ros.script.recv.3669479074)
 
-(defun create-server (port degree)
+(defun read-datagram (socket)
+  (handler-case (multiple-value-bind (data size remh remp) (usocket:socket-receive socket nil 512)
+                  (declare (ignore remp remh))
+                  (values data size))
+    #+sbcl (sb-sys:interactive-interrupt ()
+             (sb-ext:exit))))
+
+(defun create-receiver (port degree)
   (let ((socket (usocket:socket-connect nil nil
                                         :protocol :datagram
                                         :element-type '(unsigned-byte 8)
@@ -17,21 +24,20 @@ exec ros -Q -- $0 "$@"
                                         :local-port port)))
     (unwind-protect
          ;; receive some bytes to lock with
-         (multiple-value-bind (buffer size remh remp) (usocket:socket-receive socket nil 512)
-           (declare (ignore remp remh))
+         (multiple-value-bind (buffer size) (read-datagram socket)
            (let ((err (lock (bit-wise:bytes->bits (coerce (subseq buffer 0 size) 'list)) degree)))
              (if err 
                  (labels ((rec ()
-                            (multiple-value-bind (buff size remh remp) (usocket:socket-receive socket nil 512)
-                              (declare (ignore remp remh))
+                            (multiple-value-bind (buff size) (read-datagram socket)
                               (multiple-value-bind (a b) (funcall err (bit-wise:bytes->bits (coerce (subseq buff 0 size) 'list)))
                                 (format t "~A ~A ~F%~%" a b (coerce (* 100 (/ a b)) 'float))))
                             (rec)))
                    (format t "locked on ~A bytes~%" size)
                    (rec))
-                 (write-line "unable to lock")))))
-      (usocket:socket-close socket)))
-
+                 (write-line "unable to lock"))))
+      (usocket:socket-close socket))))
+  
 (defun main (&rest argv)
-  (let ((args argv))
-    (create-server 2002 (parse-integer (car args)))))
+  (if (eq 1 (length argv))
+      (create-receiver 2002 (parse-integer (car argv)))
+      (write-line "usage: recv <polynomial degree>")))

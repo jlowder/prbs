@@ -8,6 +8,16 @@ exec ros -Q -- $0 "$@"
   (:use :cl :usocket :prbs))
 (in-package :ros.script.sender.3669478566)
 
+(defun send-datagram (socket port data)
+  (handler-case (sleep 0.3)
+    #+sbcl (sb-sys:interactive-interrupt ()
+             (sb-ext:exit)))
+  (usocket:socket-send socket
+                       data
+                       (length data)
+                       :port port
+                       :host "127.0.0.1"))
+
 (defun create-sender (port size degree)
   (let* ((socket (usocket:socket-connect nil nil
                                          :protocol :datagram
@@ -17,16 +27,12 @@ exec ros -Q -- $0 "$@"
          (gen (byte-gen degree :seed (get-universal-time))))
     (unwind-protect
          (labels ((rec ()
-                    (sleep 0.3)
-                    (usocket:socket-send socket
-                                         (funcall gen size)
-                                         size
-                                         :port port
-                                         :host "127.0.0.1")
+                    (send-datagram socket port (funcall gen size))
                     (rec)))
-           (rec)
-           (usocket:socket-close socket)))))
+           (rec))
+      (usocket:socket-close socket))))
 
 (defun main (&rest argv)
-  (let ((size argv))
-    (create-sender 2002 (parse-integer (car size)) (parse-integer (second size)))))
+  (if (eq 2 (length argv))
+      (create-sender 2002 (parse-integer (first argv)) (parse-integer (second argv)))
+      (write-line "usage: sender <block size in bytes> <polynomial degree>")))
