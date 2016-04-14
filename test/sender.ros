@@ -35,4 +35,11 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (if (eq 2 (length argv))
       (create-sender 2002 (parse-integer (first argv)) (parse-integer (second argv)))
-      (write-line "usage: sender <block size in bytes> <polynomial degree>")))
+      (mapc #'write-line '("Usage: sender <block size in bytes> <polynomial degree>"
+                           ""
+                           "Block size is arbitrary, but an individual block needs to have enough data for the receiver to"
+                           "lock. There does not seem to be any mathematical formula for determining how much data is needed"
+                           "for a given PRBS sequence in order to guarantee lock, but a rule of thumb is to use at least a"
+                           "byte for each bit in the sequence (e.g. 23 bytes for a PRBS-23 and so on)."
+                           ""
+                           "After starting this, go to another window and run the recv script. Ctrl-C when done."))))

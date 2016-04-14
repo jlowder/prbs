@@ -1,5 +1,5 @@
 # prbs
-Pseudo-random bit sequence generators (LFSR-2 and LFSR-4) in Common Lisp.
+Pseudo-random binary sequence generators (LFSR-2 and LFSR-4) in Common Lisp.
 
 ## Overview
 
@@ -20,7 +20,6 @@ The smallest PRBS sequence is PRBS-3, which is only 21 bits long.
 (use-package :prbs)
 
 (funcall (bit-gen 3) 21)
-
 => #*010101011111110100001
 
 ~~~

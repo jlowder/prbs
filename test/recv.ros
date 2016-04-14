@@ -30,14 +30,16 @@ exec ros -Q -- $0 "$@"
                  (labels ((rec ()
                             (multiple-value-bind (buff size) (read-datagram socket)
                               (multiple-value-bind (a b) (funcall err (bit-wise:bytes->bits (coerce (subseq buff 0 size) 'list)))
-                                (format t "~A ~A ~F%~%" a b (coerce (* 100 (/ a b)) 'float))))
+                                (format t "~F% errors (~A errs, ~A bits)~%" (coerce (* 100 (/ a b)) 'float) a b)))
                             (rec)))
-                   (format t "locked on ~A bytes~%" size)
+                   (format t "Locked on ~A bytes~%" size)
                    (rec))
-                 (write-line "unable to lock"))))
+                 (write-line "Unable to lock. Increase the block size in the sender."))))
       (usocket:socket-close socket))))
   
 (defun main (&rest argv)
   (if (eq 1 (length argv))
       (create-receiver 2002 (parse-integer (car argv)))
-      (write-line "usage: recv <polynomial degree>")))
+      (mapc #'write-line '("Usage: recv <polynomial degree>"
+                           ""
+                           "Run this concurrently with the sender script, and use the same polynomial degree as the sender."))))

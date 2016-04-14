@@ -2,6 +2,7 @@
     :name "prbs"
     :version "0.1.0"
     :author "Jason Lowdermilk <jlowdermilk@gmail.com>"
+    :description "A library of higher-order functions that generate Pseudo-Random Binary Sequences of (practically) any degree"
     :licence "MIT"
     :serial t
     :depends-on (:rmatch :bit-wise)
