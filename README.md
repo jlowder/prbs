@@ -117,17 +117,21 @@ datagrams.
 Someday you might encounter some data that you suspect is from a PRBS, but you are not sure which one.
 
 ~~~lisp
-(use-package :prbs.err)
+(use-package '(prbs prbs.err prbs.util) :cl-user)
 
-(prbs-detect (take 600 (bit-gen 45 :seed (get-universal-time) :start 12)) :max 100)
+(prbs-detect (bytes->bits (loop repeat 75 collect (random 255))) :max 100)
+=> NIL
+
+(prbs-detect (take 600 (bit-gen 45 :seed (get-universal-time) :start 11)) :max 100)
 => (45)
 
 ~~~
 
-In this case, a sample of 75 bytes (600 bits) from a PRBS-45, taken at
-an arbitrary non-aligned bit offset, was enough to uniquely identify
-the sequence -- not bad considering the full PRBS-45 sequence is
-almost 200 terabytes long.
+In this case, a 75-byte sample of random data finds no matches,
+whereas a 75-byte sample (600 bits) from PRBS-45 taken at an arbitrary
+non-aligned bit offset was enough to uniquely identify the sequence --
+not bad considering the full PRBS-45 sequence is almost 200 terabytes
+long.
 
 ## API Reference
 
