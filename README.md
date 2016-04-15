@@ -90,7 +90,7 @@ used to "lock" on the PRBS sequence:
 (ql:quickload :prbs)
 (use-package :prbs.err)
 
-(let (tracker (lock (receive-packet-data ...) 33))
+(let ((tracker (lock (receive-packet-data ...) 33)))
 
 ~~~
 
@@ -117,6 +117,7 @@ datagrams.
 Someday you might encounter some data that you suspect is from a PRBS, but you are not sure which one.
 
 ~~~lisp
+(ql:quickload :prbs)
 (use-package '(prbs prbs.err prbs.util) :cl-user)
 
 (prbs-detect (bytes->bits (loop repeat 75 collect (random 255))) :max 100)
@@ -127,11 +128,11 @@ Someday you might encounter some data that you suspect is from a PRBS, but you a
 
 ~~~
 
-In this case, a 75-byte sample of random data finds no matches,
-whereas a 75-byte sample (600 bits) from PRBS-45 taken at an arbitrary
-non-aligned bit offset was enough to uniquely identify the sequence --
-not bad considering the full PRBS-45 sequence is almost 200 terabytes
-long.
+As expected, a 75-byte sample of random data does not match any PRBS
+sequence.  However, a 75-byte sample (600 bits) from PRBS-45 taken at
+an arbitrary non-aligned bit offset was enough to uniquely identify
+the sequence -- not bad considering the full PRBS-45 sequence is
+almost 200 terabytes long.
 
 ## API Reference
 
