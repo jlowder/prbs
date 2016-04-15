@@ -14,8 +14,6 @@
 
 (in-package :prbs)
 
-(declaim (optimize (debug 0) (safety 0) (speed 3)))
-
 (defun prbs-n (bv taps &optional (len (length taps)))
   "=> bit-vector
 
