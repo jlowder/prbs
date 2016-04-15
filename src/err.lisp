@@ -6,7 +6,7 @@
         :prbs.util)
   (:export :sfind
            :sfind-all
-           :lock
+           :prbs-lock
            :prbs-detect))
 
 (in-package :prbs.err)
@@ -39,7 +39,7 @@ Brute-force search a PRBS-`N` sequence for all matches of an arbitrary bit patte
                          (rec p (subseq v 1) (1- n) (1+ o) c 1))))))
       (rec p #* (seq-length n) 0 nil (length p)))))
 
-(defun lock (p n &optional (rem n))
+(defun prbs-lock (p n &optional (rem n))
   "=> lambda (x)
 
 Attempt to lock on a PRBS-`N` sequence using the bitvector `P`. If
@@ -53,7 +53,7 @@ number of bits it has seen."
            (< (length p) n))
     (let ((gen (bit-gen n :seed (bv->num (subseq p 0 n)))))
       (if (mismatch (funcall gen (length p)) p)
-          (lock (subseq p 1) n (1- rem))
+          (prbs-lock (subseq p 1) n (1- rem))
           (make-tracker gen (length p))))))
 
 (defun make-tracker (gen total-bits &optional (error-bits 0))
@@ -67,4 +67,4 @@ number of bits it has seen."
 to. Return a list of all candidate polynomial degrees (up to `MAX`)
 that can generate `P`."
   (loop for i from 3 to (min max (length p))
-        when (lock p i) collect i))
+        when (prbs-lock p i) collect i))

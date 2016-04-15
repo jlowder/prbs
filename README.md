@@ -90,11 +90,11 @@ used to "lock" on the PRBS sequence:
 (ql:quickload :prbs)
 (use-package :prbs.err)
 
-(let ((tracker (lock (receive-packet-data ...) 33)))
+(let ((tracker (prbs-lock (receive-packet-data ...) 33)))
 
 ~~~
 
-The lock function will use the available data to locate where it is in
+The prbs-lock function will use the available data to locate where it is in
 the sequence and initialize a PRBS generator of its own that it uses
 to predict future data. Any arriving data that does not match the
 prediction is considered an error.
@@ -130,7 +130,7 @@ Someday you might encounter some data that you suspect is from a PRBS, but you a
 
 As expected, a 75-byte sample of random data does not match any PRBS
 sequence.  However, a 75-byte sample (600 bits) from PRBS-45 taken at
-an arbitrary non-aligned bit offset was enough to uniquely identify
+an arbitrary non-aligned bit offset is enough to uniquely identify
 the sequence -- not bad considering the full PRBS-45 sequence is
 almost 200 terabytes long.
 

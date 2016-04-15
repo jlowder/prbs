@@ -116,8 +116,19 @@ vector.</p>
 <section id='prbs.err-functions' class='section-functions'>
   <h2>Functions
   </h2>
-<section id='apiref-lock' class='section-apiref-item'>
-  <div class='apiref-spec'>LOCK
+<section id='apiref-prbs-detect' class='section-apiref-item'>
+  <div class='apiref-spec'>PRBS-DETECT
+  </div>
+  <div class='apiref-lambda'>(P &amp;KEY (MAX 786))
+  </div>
+  <div class='apiref-doc'><p>Attempt to identify which PRBS sequences the bitvector <code>P</code> belongs
+to. Return a list of all candidate polynomial degrees (up to <code>MAX</code>)
+that can generate <code>P</code>.</p>
+
+  </div>
+</section>
+<section id='apiref-prbs-lock' class='section-apiref-item'>
+  <div class='apiref-spec'>PRBS-LOCK
   </div>
   <div class='apiref-lambda'>(P N &amp;OPTIONAL (REM N))
   </div>
@@ -129,17 +140,6 @@ in the sequence, or nil if unable to lock. The lambda can be
 repeatedly called with a bitvector containing subsequent data, and it
 will return the total number of bit errors detected and the total
 number of bits it has seen.</p>
-
-  </div>
-</section>
-<section id='apiref-prbs-detect' class='section-apiref-item'>
-  <div class='apiref-spec'>PRBS-DETECT
-  </div>
-  <div class='apiref-lambda'>(P &amp;KEY (MAX 786))
-  </div>
-  <div class='apiref-doc'><p>Attempt to identify which PRBS sequences the bitvector <code>P</code> belongs
-to. Return a list of all candidate polynomial degrees (up to <code>MAX</code>)
-that can generate <code>P</code>.</p>
 
   </div>
 </section>

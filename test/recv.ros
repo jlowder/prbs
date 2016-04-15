@@ -25,7 +25,7 @@ exec ros -Q -- $0 "$@"
     (unwind-protect
          ;; receive some bytes to lock with
          (multiple-value-bind (buffer size) (read-datagram socket)
-           (let ((err (lock (bytes->bits (coerce (subseq buffer 0 size) 'list)) degree)))
+           (let ((err (prbs-lock (bytes->bits (coerce (subseq buffer 0 size) 'list)) degree)))
              (if err 
                  (labels ((rec ()
                             (multiple-value-bind (buff size) (read-datagram socket)
