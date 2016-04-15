@@ -1,15 +1,20 @@
 # prbs
-Pseudo-random binary sequence generators (LFSR-2 and LFSR-4) in Common Lisp.
+
+Library of pseudo-random binary sequence generators (LFSR-2 and
+LFSR-4) and related functions in Common Lisp.
 
 ## Overview
-
  
 This is a library of higher-order functions that will generate [PRBS
 sequences](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence)
 of degree [3 through 786, 1024, 2048, and
 4096](http://courses.cse.tamu.edu/csce680/walker/lfsr_table.pdf).  The
 closures produced by these functions will generate sequences as
-bitvectors, byte arrays, or lists of bit-vectors or unsigned integers.
+bitvectors, byte arrays, lists of bit-vectors, or lists of unsigned
+integers.
+
+Other functions are included for detecting and tracking errors in PRBS
+data and finding the degree of unknown PRBS data.
 
 ## Sequence Generation
 
@@ -62,8 +67,8 @@ testing purposes but it makes early values in the sequence "zero heavy".
 
 PRBS sequences are often used to characterize the error rate in
 communication links. If you generate packets of PRBS data and send
-them across an unreliable communications link, the received packets
-can be analyzed to determine the errors in the data.
+them across an unreliable link, the received packets can be analyzed
+to determine the error rate of the comm link.
 
 Assume that you have created packets of data for transmission:
 
@@ -107,6 +112,27 @@ prediction is considered an error.
 See sender.ros and recv.ros in the test folder for an example that does this with UDP
 datagrams.
 
+## Sequence Detection
+
+Someday you might encounter some data that you suspect is from a PRBS, but you are not sure which one.
+
+~~~lisp
+(use-package :prbs.err)
+
+(prbs-detect (take 600 (bit-gen 45 :seed (get-universal-time) :start 12)) :max 100)
+=> (45)
+
+~~~
+
+In this case, a sample of 75 bytes (600 bits) from a PRBS-45, taken at
+an arbitrary non-aligned bit offset, was enough to uniquely identify
+the sequence -- not bad considering the full PRBS-45 sequence is
+almost 200 terabytes long.
+
 ## API Reference
 
 [API Reference](http://htmlpreview.github.com/?http://github.com/jlowder/prbs/blob/master/doc/ref.html)
+
+## License
+
+MIT

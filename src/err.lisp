@@ -6,7 +6,8 @@
         :prbs.util)
   (:export :sfind
            :sfind-all
-           :lock))
+           :lock
+           :prbs-detect))
 
 (in-package :prbs.err)
 
@@ -41,7 +42,7 @@ Brute-force search a PRBS-`N` sequence for all matches of an arbitrary bit patte
 (defun lock (p n &optional (rem n))
   "=> lambda (x)
 
-Attempt to lock on a PRBS-`N` sequence using the bit pattern `P`. If
+Attempt to lock on a PRBS-`N` sequence using the bitvector `P`. If
 successful, return a lambda that tracks bit errors for subsequent data
 in the sequence, or nil if unable to lock. The lambda can be
 repeatedly called with a bitvector containing subsequent data, and it
@@ -61,3 +62,9 @@ number of bits it has seen."
     (setq error-bits (+ error-bits (reduce #'+ (bit-xor bits (funcall gen (length bits))))))
     (values error-bits total-bits)))
 
+(defun prbs-detect (p &key (max 786))
+  "Attempt to identify which PRBS sequences the bitvector `P` belongs
+to. Return a list of all candidate polynomial degrees (up to `MAX`)
+that can generate `P`."
+  (loop for i from 3 to (min max (length p))
+        when (lock p i) collect i))
