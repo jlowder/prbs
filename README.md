@@ -8,8 +8,8 @@ LFSR-4) and related functions in Common Lisp.
 This is a library of higher-order functions that will generate [PRBS
 sequences](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence)
 of degree [3 through 786, 1024, 2048, and
-4096](http://courses.cse.tamu.edu/csce680/walker/lfsr_table.pdf).  The
-closures produced by these functions will generate sequences as
+4096](https://pdfs.semanticscholar.org/9487/ab51297b35a1ff570db6f7223870d8da7fa9.pdf).
+The closures produced by these functions will generate sequences as
 bitvectors, byte arrays, lists of bit-vectors, or lists of unsigned
 integers.
 
